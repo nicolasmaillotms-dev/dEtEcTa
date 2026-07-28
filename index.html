@@ -513,9 +513,18 @@ main{flex:1;overflow-y:auto;padding:14px 14px 100px}
           </select>
         </div>
         <div class="field">
-          <label>Seuil à valider (%LEL)</label>
-          <input type="number" id="gz-inp-seuil" value="50" min="1" max="100" inputmode="decimal">
-          <div class="hint">Généralement 50% LEL</div>
+          <label>Seuil à valider</label>
+          <div style="display:flex;gap:6px;align-items:stretch">
+            <input type="number" id="gz-inp-seuil" value="50" min="0.001" step="any" inputmode="decimal"
+              style="flex:1;background:var(--s2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;padding:11px 14px;outline:none"
+              oninput="gazConvertSeuil('lel')">
+            <div style="display:flex;background:var(--s2);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0">
+              <button class="gz-unit-btn gz-unit-on" id="gz-seuil-lel" onclick="gazSetSeuilUnit('lel')" style="padding:0 12px;border:none;background:#FF6A00;color:#12141A;font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation">%LEL</button>
+              <button class="gz-unit-btn" id="gz-seuil-ppm" onclick="gazSetSeuilUnit('ppm')" style="padding:0 12px;border:none;background:transparent;color:var(--text3);font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation">ppm</button>
+            </div>
+          </div>
+          <div id="gz-seuil-convert" style="font-size:11px;color:#00D4FF;margin-top:4px;display:none"></div>
+          <div class="hint">Généralement 50% LEL — basculer en ppm si besoin</div>
         </div>
       </div>
     </div>
@@ -526,8 +535,18 @@ main{flex:1;overflow-y:auto;padding:14px 14px 100px}
         <select id="gz-sel-subst"><option value="">— Sélectionner —</option></select>
       </div>
       <div class="field">
-        <label>Concentration du cylindre (%LEL)</label>
-        <input type="number" id="gz-inp-conc" value="" min="0.1" max="100" placeholder="ex: 50" inputmode="decimal">
+        <label>Concentration du cylindre</label>
+        <div style="display:flex;gap:6px;align-items:stretch">
+          <input type="number" id="gz-inp-conc" value="" min="0.001" step="any" placeholder="ex: 50" inputmode="decimal"
+            style="flex:1;background:var(--s2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;padding:11px 14px;outline:none"
+            oninput="gazConvertConc('lel')">
+          <div style="display:flex;background:var(--s2);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0">
+            <button class="gz-unit-btn gz-unit-on" id="gz-conc-lel" onclick="gazSetConcUnit('lel')" style="padding:0 12px;border:none;background:#FF6A00;color:#12141A;font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation">%LEL</button>
+            <button class="gz-unit-btn" id="gz-conc-ppm" onclick="gazSetConcUnit('ppm')" style="padding:0 12px;border:none;background:transparent;color:var(--text3);font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation">ppm</button>
+            <button class="gz-unit-btn" id="gz-conc-vol" onclick="gazSetConcUnit('vol')" style="padding:0 12px;border:none;background:transparent;color:var(--text3);font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation">%vol</button>
+          </div>
+        </div>
+        <div id="gz-conc-convert" style="font-size:11px;color:#00D4FF;margin-top:4px;display:none"></div>
         <div class="hint">Concentration indiquée sur le cylindre étalon</div>
       </div>
     </div>
@@ -537,12 +556,12 @@ main{flex:1;overflow-y:auto;padding:14px 14px 100px}
       <div class="result-hero">
         <div class="result-label">Concentration à afficher sur l'appareil</div>
         <div class="result-value" id="gz-res-val" style="color:#00D4FF">—</div>
-        <div class="result-unit">% LEL</div>
+        <div class="result-unit">% LEL <span id="gz-res-ppm" style="font-size:12px;color:#8FA3B8;font-weight:400"></span></div>
         <div class="result-subtitle" id="gz-res-sub"></div>
       </div>
       <div class="info-grid" style="margin-top:10px">
-        <div class="info-cell"><div class="info-cell-label">CRR cible</div><div class="info-cell-val" id="gz-crr-c">—</div><div class="info-cell-sub" id="gz-name-c"></div></div>
-        <div class="info-cell"><div class="info-cell-label">CRR substitut</div><div class="info-cell-val" id="gz-crr-s">—</div><div class="info-cell-sub" id="gz-name-s"></div></div>
+        <div class="info-cell"><div class="info-cell-label">CF cible</div><div class="info-cell-val" id="gz-crr-c">—</div><div class="info-cell-sub" id="gz-name-c"></div></div>
+        <div class="info-cell"><div class="info-cell-label">CF substitut</div><div class="info-cell-val" id="gz-crr-s">—</div><div class="info-cell-sub" id="gz-name-s"></div></div>
         <div class="info-cell"><div class="info-cell-label">Seuil cible</div><div class="info-cell-val" id="gz-seuil">—</div><div class="info-cell-sub">% LEL</div></div>
         <div class="info-cell"><div class="info-cell-label">Cylindre</div><div class="info-cell-val" id="gz-cylindre">—</div><div class="info-cell-sub">% LEL dispo</div></div>
       </div>
@@ -675,7 +694,7 @@ main{flex:1;overflow-y:auto;padding:14px 14px 100px}
             <div class="info-cell-sub">% LEL gaz cible équiv.</div>
           </div>
           <div class="info-cell">
-            <div class="info-cell-label">CRR appliqué</div>
+            <div class="info-cell-label">CF appliqué</div>
             <div class="info-cell-val" id="gz-sens-crr">—</div>
             <div class="info-cell-sub">cible / substitut</div>
           </div>
@@ -1403,62 +1422,68 @@ if('serviceWorker' in navigator){
 // Format : { id, nom, formule, famille, crr, lel_pct_vol, notes }
 // ════════════════════════════════════════════════════════════════════════════
 const GARS = [
-  // ── Référence ──
-  {id:'CH4',    nom:'Méthane',          formule:'CH₄',       famille:'Alcanes',        crr:1.00, lel:5.0,  notes:'Gaz de référence (CRR = 1.00 par définition)'},
-  // ── Alcanes ──
-  {id:'C2H6',   nom:'Éthane',           formule:'C₂H₆',      famille:'Alcanes',        crr:1.29, lel:3.0,  notes:'Gaz naturel riche / pétrochimie'},
-  {id:'C3H8',   nom:'Propane',          formule:'C₃H₈',      famille:'Alcanes',        crr:0.56, lel:2.1,  notes:'GPL propane — très courant terrain'},
-  {id:'IC4H10', nom:'Isobutane',        formule:'i-C₄H₁₀',   famille:'Alcanes',        crr:0.54, lel:1.8,  notes:''},
-  {id:'NC4H10', nom:'n-Butane',         formule:'n-C₄H₁₀',   famille:'Alcanes',        crr:0.54, lel:1.9,  notes:'GPL butane — très courant terrain'},
-  {id:'NC5H12', nom:'n-Pentane',        formule:'n-C₅H₁₂',   famille:'Alcanes',        crr:0.67, lel:1.4,  notes:'Très utilisé comme substitut universel'},
-  {id:'IC5H12', nom:'Isopentane',       formule:'i-C₅H₁₂',   famille:'Alcanes',        crr:0.66, lel:1.4,  notes:''},
-  {id:'NC6H14', nom:'n-Hexane',         formule:'n-C₆H₁₄',   famille:'Alcanes',        crr:0.74, lel:1.1,  notes:''},
-  {id:'NC7H16', nom:'n-Heptane',        formule:'C₇H₁₆',     famille:'Alcanes',        crr:0.79, lel:1.05, notes:''},
-  {id:'NC8H18', nom:'n-Octane',         formule:'C₈H₁₈',     famille:'Alcanes',        crr:0.82, lel:0.95, notes:''},
-  // ── Alcènes / Alcynes ──
-  {id:'C2H4',   nom:'Éthylène',         formule:'C₂H₄',      famille:'Alcènes',        crr:0.60, lel:2.7,  notes:'Fruits/réfrigération. Réactif — vérifier poisoning capteur'},
-  {id:'C3H6',   nom:'Propylène',        formule:'C₃H₆',      famille:'Alcènes',        crr:0.55, lel:2.4,  notes:'Pétrochimie'},
-  {id:'C4H8',   nom:'1-Butène',         formule:'C₄H₈',      famille:'Alcènes',        crr:0.53, lel:1.6,  notes:''},
-  {id:'C2H2',   nom:'Acétylène',        formule:'C₂H₂',      famille:'Alcènes',        crr:0.47, lel:2.5,  notes:'Soudage. ATTENTION : presse-étoupe inox obligatoire'},
-  // ── Alcools ──
-  {id:'CH3OH',  nom:'Méthanol',         formule:'CH₃OH',     famille:'Alcools',        crr:2.48, lel:6.7,  notes:'CRR très élevé — capteur très peu sensible'},
-  {id:'C2H5OH', nom:'Éthanol',          formule:'C₂H₅OH',   famille:'Alcools',        crr:2.20, lel:3.3,  notes:'Industries agro-alimentaires, stérilisation'},
-  {id:'C3H7OH', nom:'n-Propanol',       formule:'C₃H₇OH',   famille:'Alcools',        crr:1.85, lel:2.2,  notes:''},
-  {id:'IC3H7OH',nom:'Isopropanol (IPA)',formule:'i-C₃H₇OH', famille:'Alcools',        crr:1.80, lel:2.0,  notes:'Nettoyant, pharmaceutique'},
-  {id:'NC4H9OH',nom:'n-Butanol',        formule:'n-C₄H₉OH', famille:'Alcools',        crr:0.90, lel:1.4,  notes:'Peintures, solvants'},
-  {id:'IC4H9OH',nom:'Isobutanol',       formule:'i-C₄H₉OH', famille:'Alcools',        crr:0.88, lel:1.7,  notes:''},
-  {id:'NC5H11OH',nom:'n-Pentanol',      formule:'C₅H₁₁OH',  famille:'Alcools',        crr:0.80, lel:1.2,  notes:''},
-  // ── Aldéhydes ──
-  {id:'HCHO',   nom:'Formaldéhyde',     formule:'CH₂O',      famille:'Aldéhydes',      crr:7.14, lel:7.0,  notes:'CRR très élevé. Capteur EC spécifique recommandé'},
-  {id:'CH3CHO', nom:'Acétaldéhyde',     formule:'CH₃CHO',   famille:'Aldéhydes',      crr:2.30, lel:4.0,  notes:'Fermentation / agroalimentaire'},
-  // ── Cétones ──
-  {id:'C3H6O',  nom:'Acétone',          formule:'(CH₃)₂CO', famille:'Cétones',        crr:1.68, lel:2.5,  notes:'Solvant très courant. Substitut fréquent'},
-  {id:'MEK',    nom:'Méthyléthylcétone (MEK)',formule:'C₄H₈O', famille:'Cétones',     crr:1.20, lel:1.8,  notes:'Peintures industrielles'},
-  {id:'MIBK',   nom:'MIBK',             formule:'C₆H₁₂O',   famille:'Cétones',        crr:1.10, lel:1.4,  notes:''},
-  {id:'CYCLOHEXANONE',nom:'Cyclohexanone',formule:'C₆H₁₀O', famille:'Cétones',        crr:0.95, lel:1.1,  notes:''},
-  // ── Aromatiques ──
-  {id:'C6H6',   nom:'Benzène',          formule:'C₆H₆',      famille:'Aromatiques',    crr:0.60, lel:1.2,  notes:'CMR1A — VLEP 0.2 ppm. Capteur PID fortement recommandé'},
-  {id:'C7H8',   nom:'Toluène',          formule:'C₇H₈',      famille:'Aromatiques',    crr:0.62, lel:1.1,  notes:'Peintures, encres'},
-  {id:'C8H10',  nom:'Xylène (o/m/p)',   formule:'C₈H₁₀',    famille:'Aromatiques',    crr:0.64, lel:1.0,  notes:''},
-  {id:'STYRENE',nom:'Styrène',          formule:'C₈H₈',      famille:'Aromatiques',    crr:0.58, lel:1.1,  notes:'Résines, plastiques'},
-  {id:'C6H5OH', nom:'Phénol',           formule:'C₆H₅OH',   famille:'Aromatiques',    crr:0.55, lel:1.7,  notes:'Résines phénoliques'},
-  // ── Halogénés ──
-  {id:'CH2CL2', nom:'Dichlorométhane',  formule:'CH₂Cl₂',   famille:'Halogénés',      crr:5.26, lel:13.0, notes:'CRR élevé. Solvant peintures. Faible réponse capteur'},
-  {id:'CHCl3',  nom:'Chloroforme',      formule:'CHCl₃',     famille:'Halogénés',      crr:8.33, lel:null,    notes:'Facteur correctif très élevé'},
-  {id:'CCL4',   nom:'Tétrachlorométhane',formule:'CCl₄',     famille:'Halogénés',      crr:100,  lel:null,    notes:'Poison capteur catalytique ! Réponse quasi nulle'},
-  {id:'C2H4CL2',nom:'1,2-Dichloroéthane',formule:'C₂H₄Cl₂',famille:'Halogénés',      crr:7.14, lel:6.2,  notes:''},
-  {id:'C2HCL3', nom:'Trichloroéthylène',formule:'C₂HCl₃',  famille:'Halogénés',      crr:12.5, lel:8.0,  notes:'Dégraissant industriel. Poison potentiel capteur'},
-  // ── Éthers & Esters ──
-  {id:'C4H10O', nom:'Éther diéthylique',formule:'(C₂H₅)₂O',famille:'Éthers/Esters',  crr:0.71, lel:1.9,  notes:'Très volatil. Précautions particulières'},
-  {id:'THF',    nom:'THF',              formule:'C₄H₈O',     famille:'Éthers/Esters',  crr:0.80, lel:2.0,  notes:'Solvant laboratoire'},
-  {id:'AcOEt',  nom:'Acétate d\'éthyle',formule:'C₄H₈O₂',  famille:'Éthers/Esters',  crr:1.25, lel:2.2,  notes:'Imprimerie, peintures'},
-  {id:'AcOBu',  nom:'Acétate de butyle',formule:'C₆H₁₂O₂', famille:'Éthers/Esters',  crr:0.90, lel:1.7,  notes:'Vernis, colles'},
-  // ── Hydrogène & divers ──
-  {id:'H2',     nom:'Hydrogène',        formule:'H₂',         famille:'Autres',         crr:1.00, lel:4.0,  notes:'CRR=1.00 MAIS réponse très différente selon technologie capteur'},
-  {id:'NH3',    nom:'Ammoniac',         formule:'NH₃',        famille:'Autres',         crr:4.00, lel:15.0, notes:'Ne pas utiliser capteur CatEx pour NH3 à basse concentration'},
-  {id:'CO',     nom:'Monoxyde de carbone',formule:'CO',       famille:'Autres',         crr:6.67, lel:12.5, notes:'Faible réponse CatEx — utiliser capteur EC'},
-  {id:'CS2',    nom:'Sulfure de carbone',formule:'CS₂',       famille:'Autres',         crr:0.54, lel:1.3,  notes:'Poison potentiel capteur'},
-  {id:'H2S',    nom:'Sulfure d\'hydrogène',formule:'H₂S',    famille:'Autres',         crr:2.04, lel:4.3,  notes:'POISON capteur CatEx à haute concentration (>500ppm)'},
+  // ── Référence ──────────────────────────────────────────────────────────────
+  {id:'CH4',     nom:'Méthane',              formule:'CH₄',       famille:'Alcanes',        cf:1.00, lel:4.4,  src:'RAE TN-205 EMEA',  notes:'Gaz de référence. CF = 1.00 par définition. LEL EU = 4.4%vol (EN61779). LEL monde = 5%vol.'},
+  // ── Alcanes ────────────────────────────────────────────────────────────────
+  {id:'C2H6',    nom:'Éthane',               formule:'C₂H₆',      famille:'Alcanes',        cf:1.50, lel:2.5,  src:'RAE TN-205',       notes:'Gaz naturel riche.'},
+  {id:'C3H8',    nom:'Propane',              formule:'C₃H₈',      famille:'Alcanes',        cf:1.20, lel:1.7,  src:'RAE TN-205 / Crowcon', notes:'GPL propane. CF=1.2 (RAE TN-205 EU). Note Crowcon : CF=0.64 convention inverse → 1/0.64=1.56 → moyenne 1.2-1.4 selon fabricant pellistor.'},
+  {id:'IC4H10',  nom:'Isobutane',            formule:'i-C₄H₁₀',   famille:'Alcanes',        cf:2.10, lel:1.8,  src:'RAE TN-205',       notes:'GPL isobutane.'},
+  {id:'NC4H10',  nom:'n-Butane',             formule:'n-C₄H₁₀',   famille:'Alcanes',        cf:2.30, lel:1.9,  src:'RAE TN-205',       notes:'GPL butane.'},
+  {id:'NC5H12',  nom:'n-Pentane',            formule:'n-C₅H₁₂',   famille:'Alcanes',        cf:1.80, lel:1.5,  src:'RAE TN-205',       notes:'Substitut universel recommandé quand CF cible > 1.2. Diviser CF table CH4 par 1.8 pour obtenir CF pentane.'},
+  {id:'IC5H12',  nom:'Isopentane',           formule:'i-C₅H₁₂',   famille:'Alcanes',        cf:1.70, lel:1.4,  src:'RAE TN-205',       notes:''},
+  {id:'NC6H14',  nom:'n-Hexane',             formule:'n-C₆H₁₄',   famille:'Alcanes',        cf:2.00, lel:1.1,  src:'RAE TN-205',       notes:''},
+  {id:'NC7H16',  nom:'n-Heptane',            formule:'C₇H₁₆',     famille:'Alcanes',        cf:2.20, lel:1.1,  src:'RAE TN-205',       notes:''},
+  {id:'NC8H18',  nom:'n-Octane',             formule:'C₈H₁₈',     famille:'Alcanes',        cf:3.00, lel:1.0,  src:'RAE TN-205',       notes:''},
+  {id:'NC9H20',  nom:'n-Nonane',             formule:'C₉H₂₀',     famille:'Alcanes',        cf:3.00, lel:0.8,  src:'RAE TN-205',       notes:''},
+  {id:'NC10H22', nom:'n-Décane',             formule:'C₁₀H₂₂',    famille:'Alcanes',        cf:3.30, lel:0.7,  src:'RAE TN-205',       notes:''},
+  // ── Alcènes / Alcynes ──────────────────────────────────────────────────────
+  {id:'C2H4',    nom:'Éthylène (Éthène)',    formule:'C₂H₄',      famille:'Alcènes',        cf:1.30, lel:2.3,  src:'RAE TN-205',       notes:'Fruits/réfrigération.'},
+  {id:'C3H6',    nom:'Propylène (Propène)',  formule:'C₃H₆',      famille:'Alcènes',        cf:1.40, lel:2.0,  src:'RAE TN-205',       notes:'Pétrochimie.'},
+  {id:'C4H8',    nom:'Butène-1',             formule:'C₄H₈',      famille:'Alcènes',        cf:1.70, lel:1.6,  src:'RAE TN-205',       notes:''},
+  {id:'C2H2',    nom:'Acétylène',            formule:'C₂H₂',      famille:'Alcènes',        cf:2.80, lel:2.3,  src:'RAE TN-205',       notes:'Soudage. Presse-étoupe INOX obligatoire. CF élevé = sous-estimation par capteur calibré CH4.'},
+  // ── Alcools ────────────────────────────────────────────────────────────────
+  {id:'CH3OH',   nom:'Méthanol',             formule:'CH₃OH',     famille:'Alcools',        cf:1.50, lel:5.5,  src:'RAE TN-205',       notes:'LEL EU (EN61779) = 5.5%vol. CF=1.5.'},
+  {id:'C2H5OH',  nom:'Éthanol',              formule:'C₂H₅OH',   famille:'Alcools',        cf:1.70, lel:3.1,  src:'RAE TN-205',       notes:'Industries agro-alimentaires, stérilisation. CF=1.7.'},
+  {id:'C3H7OH',  nom:'n-Propanol',           formule:'C₃H₇OH',   famille:'Alcools',        cf:2.40, lel:2.2,  src:'RAE TN-205',       notes:''},
+  {id:'IC3H7OH', nom:'Isopropanol (IPA)',    formule:'i-C₃H₇OH', famille:'Alcools',        cf:1.90, lel:2.0,  src:'RAE TN-205',       notes:'Nettoyant, pharmaceutique.'},
+  {id:'NC4H9OH', nom:'n-Butanol',            formule:'n-C₄H₉OH', famille:'Alcools',        cf:2.00, lel:1.7,  src:'RAE TN-205',       notes:'Peintures, solvants. CF=2.0.'},
+  {id:'IC4H9OH', nom:'Isobutanol',           formule:'i-C₄H₉OH', famille:'Alcools',        cf:2.00, lel:1.7,  src:'RAE TN-205',       notes:'CF identique n-butanol.'},
+  // ── Aldéhydes ──────────────────────────────────────────────────────────────
+  {id:'HCHO',    nom:'Formaldéhyde',         formule:'CH₂O',      famille:'Aldéhydes',      cf:null, lel:7.0,  src:'—',                notes:'CF non défini — capteur CatEx inadapté. Utiliser capteur EC spécifique.'},
+  {id:'CH3CHO',  nom:'Acétaldéhyde',         formule:'CH₃CHO',   famille:'Aldéhydes',      cf:1.50, lel:4.0,  src:'RAE TN-205',       notes:'Fermentation / agroalimentaire.'},
+  // ── Cétones ────────────────────────────────────────────────────────────────
+  {id:'C3H6O',   nom:'Acétone',              formule:'(CH₃)₂CO', famille:'Cétones',        cf:1.70, lel:2.5,  src:'RAE TN-205',       notes:'Solvant très courant. CF=1.7.'},
+  {id:'MEK',     nom:'Méthyléthylcétone (MEK)', formule:'C₄H₈O', famille:'Cétones',        cf:1.50, lel:1.4,  src:'RAE TN-205',       notes:'Peintures industrielles.'},
+  {id:'MIBK',    nom:'MIBK',                 formule:'C₆H₁₂O',   famille:'Cétones',        cf:2.10, lel:1.4,  src:'RAE TN-205',       notes:''},
+  {id:'CYCLOHEX',nom:'Cyclohexane',          formule:'C₆H₁₂',    famille:'Cétones',        cf:1.80, lel:1.2,  src:'RAE TN-205',       notes:''},
+  // ── Aromatiques ────────────────────────────────────────────────────────────
+  {id:'C6H6',    nom:'Benzène',              formule:'C₆H₆',      famille:'Aromatiques',    cf:1.80, lel:1.2,  src:'RAE TN-205',       notes:'CMR1A — VLEP 0.2 ppm (EU 2026). CF=1.8. Capteur PID 10.0eV fortement recommandé.'},
+  {id:'C7H8',    nom:'Toluène',              formule:'C₇H₈',      famille:'Aromatiques',    cf:1.50, lel:1.1,  src:'RAE TN-205',       notes:'Peintures, encres.'},
+  {id:'C8H10',   nom:'Xylène (m)',           formule:'m-C₈H₁₀',  famille:'Aromatiques',    cf:2.40, lel:1.1,  src:'RAE TN-205',       notes:'CF xylène varie selon isomère (o=2.5, m=2.4, p=2.6).'},
+  {id:'STYRENE', nom:'Styrène',              formule:'C₈H₈',      famille:'Aromatiques',    cf:2.00, lel:1.1,  src:'estimé',           notes:'Résines, plastiques.'},
+  {id:'C6H5OH',  nom:'Phénol',              formule:'C₆H₅OH',   famille:'Aromatiques',    cf:null, lel:1.7,  src:'—',                notes:'CF non fiable sur CatEx. Utiliser PID.'},
+  // ── Halogénés ──────────────────────────────────────────────────────────────
+  {id:'CH2CL2',  nom:'Dichlorométhane (DCM)',formule:'CH₂Cl₂',   famille:'Halogénés',      cf:2.00, lel:13.0, src:'RAE TN-205',       notes:'CF=2.0 selon RAE. Réponse faible — résultat peu fiable.'},
+  {id:'C2H4CL2', nom:'1,2-Dichloroéthane',  formule:'C₂H₄Cl₂',  famille:'Halogénés',      cf:4.80, lel:6.2,  src:'RAE TN-205',       notes:'CF très élevé = sous-estimation importante.'},
+  {id:'C2HCL3',  nom:'Trichloroéthylène',   formule:'C₂HCl₃',   famille:'Halogénés',      cf:null, lel:8.0,  src:'—',                notes:'POISON capteur CatEx. Ne jamais utiliser comme gaz de substitution.'},
+  {id:'CCL4',    nom:'Tétrachlorométhane',   formule:'CCl₄',      famille:'Halogénés',      cf:null, lel:null, src:'—',                notes:'POISON capteur CatEx. Réponse quasi nulle. Ne jamais utiliser.'},
+  {id:'CHCl3',   nom:'Chloroforme',          formule:'CHCl₃',     famille:'Halogénés',      cf:null, lel:null, src:'—',                notes:'POISON capteur CatEx. Ne jamais utiliser.'},
+  {id:'C2H3CL',  nom:'Chlorure de vinyle',   formule:'C₂H₃Cl',   famille:'Halogénés',      cf:1.80, lel:3.6,  src:'RAE TN-205',       notes:''},
+  {id:'CH3CL',   nom:'Chlorure de méthyle',  formule:'CH₃Cl',     famille:'Halogénés',      cf:1.60, lel:8.1,  src:'RAE TN-205',       notes:''},
+  // ── Éthers & Esters ────────────────────────────────────────────────────────
+  {id:'C4H10O',  nom:'Éther diéthylique',    formule:'(C₂H₅)₂O', famille:'Éthers/Esters',  cf:1.90, lel:1.9,  src:'RAE TN-205',       notes:'Très volatil. CF=1.9. Précautions particulières.'},
+  {id:'THF',     nom:'Tétrahydrofurane (THF)',formule:'C₄H₈O',    famille:'Éthers/Esters',  cf:null, lel:2.0,  src:'estimé',           notes:'Solvant laboratoire.'},
+  {id:'AcOEt',   nom:'Acétate d\'éthyle',    formule:'C₄H₈O₂',   famille:'Éthers/Esters',  cf:1.90, lel:2.2,  src:'RAE TN-205',       notes:'Imprimerie, peintures.'},
+  {id:'AcOBu',   nom:'Acétate de butyle',    formule:'C₆H₁₂O₂',  famille:'Éthers/Esters',  cf:null, lel:1.7,  src:'estimé',           notes:'Vernis, colles.'},
+  // ── Gaz spéciaux ───────────────────────────────────────────────────────────
+  {id:'H2',      nom:'Hydrogène',            formule:'H₂',         famille:'Autres',         cf:0.90, lel:4.0,  src:'RAE TN-205 / Crowcon', notes:'CF=0.9 (RAE TN-205 EU). Crowcon : 1.2 (convention inverse). Le capteur sur-réagit au H2. Attention aux pile à combustible.'},
+  {id:'NH3',     nom:'Ammoniac',             formule:'NH₃',        famille:'Autres',         cf:0.90, lel:15.0, src:'RAE TN-205',       notes:'CF=0.9. CatEx peu adapté en dessous de 50%LEL — préférer capteur EC.'},
+  {id:'CO',      nom:'Monoxyde de carbone',  formule:'CO',         famille:'Autres',         cf:1.30, lel:10.9, src:'RAE TN-205',       notes:'CF=1.3. Utiliser impérativement capteur EC pour CO — CatEx imprécis.'},
+  {id:'CS2',     nom:'Sulfure de carbone',   formule:'CS₂',        famille:'Autres',         cf:null, lel:1.3,  src:'—',                notes:'Potentiellement poison capteur.'},
+  {id:'H2S',     nom:'Sulfure d\'hydrogène', formule:'H₂S',        famille:'Autres',         cf:null, lel:4.3,  src:'—',                notes:'POISON CatEx à haute concentration (>500 ppm). Utiliser capteur EC.'},
+  {id:'C2H6O2',  nom:'Éthylène glycol',      formule:'C₂H₆O₂',    famille:'Autres',         cf:null, lel:3.2,  src:'—',                notes:''},
+  {id:'GASOIL',  nom:'Gazole / Diesel',      formule:'C₁₀-C₂₅',   famille:'Autres',         cf:null, lel:0.6,  src:'—',                notes:'CF très variable selon composition. Utiliser PID pour mesure précise.'},
+  {id:'ESSENCE', nom:'Essence (Gasoline)',   formule:'C₄-C₁₂',    famille:'Autres',         cf:2.30, lel:1.3,  src:'RAE TN-205',       notes:'CF=2.3 (RAE). Variable selon composition.'},
 ];
 
 // Remplacer — par null
@@ -1479,8 +1504,8 @@ function buildSelects(){
     const grpC = document.createElement('optgroup'); grpC.label=f;
     const grpS = document.createElement('optgroup'); grpS.label=f;
     GARS.filter(g=>g.famille===f).forEach(g=>{
-      grpC.appendChild(new Option(`${g.nom} (CRR ${g.crr.toFixed(2)})`, g.id));
-      grpS.appendChild(new Option(`${g.nom} (CRR ${g.crr.toFixed(2)})`, g.id));
+      grpC.appendChild(new Option(`${g.nom} (CF ${g.cf.toFixed(2)})`, g.id));
+      grpS.appendChild(new Option(`${g.nom} (CF ${g.cf.toFixed(2)})`, g.id));
     });
     cible.appendChild(grpC);
     subst.appendChild(grpS);
@@ -1503,7 +1528,7 @@ function calculer(){
   const subst = GARS.find(g=>g.id===substId);
 
   // Calcul : concentration à injecter = seuil × CRR_cible / CRR_subst
-  const conc_injecter = seuil * cible.crr / subst.crr;
+  const conc_injecter = seuil * cible.cf / subst.cf;
 
   // Valider que le cylindre est suffisant
   const ratio = conc_injecter / cylindre * 100;
@@ -1512,19 +1537,19 @@ function calculer(){
   document.getElementById('res-val').textContent = conc_injecter.toFixed(1);
   document.getElementById('res-sub').textContent =
     `Injecter ${subst.nom} jusqu'à affichage ${conc_injecter.toFixed(1)}% LEL sur l'appareil`;
-  document.getElementById('res-crr-cible').textContent = cible.crr.toFixed(2);
+  document.getElementById('res-crr-cible').textContent = cible.cf.toFixed(2);
   document.getElementById('res-cible-name').textContent = cible.nom;
-  document.getElementById('res-crr-subst').textContent = subst.crr.toFixed(2);
+  document.getElementById('res-crr-subst').textContent = subst.cf.toFixed(2);
   document.getElementById('res-subst-name').textContent = subst.nom;
   document.getElementById('res-seuil').textContent = seuil.toFixed(0);
   document.getElementById('res-cylindre').textContent = cylindre.toFixed(1);
 
   // Formule détaillée
   document.getElementById('res-formula').innerHTML =
-    `C<sub>affichée</sub> = ${seuil} × ${cible.crr.toFixed(2)} / ${subst.crr.toFixed(2)}<br>
-     C<sub>affichée</sub> = ${(seuil * cible.crr).toFixed(3)} / ${subst.crr.toFixed(2)}<br>
+    `C<sub>affichée</sub> = ${seuil} × ${cible.cf.toFixed(2)} / ${subst.cf.toFixed(2)}<br>
+     C<sub>affichée</sub> = ${(seuil * cible.cf).toFixed(3)} / ${subst.cf.toFixed(2)}<br>
      <b>C<sub>affichée</sub> = ${conc_injecter.toFixed(2)} % LEL</b>
-     <span class="step">→ Rapport CRR : ${(cible.crr/subst.crr).toFixed(3)}</span>`;
+     <span class="step">→ Rapport CRR : ${(cible.cf/subst.cf).toFixed(3)}</span>`;
 
   // Avertissements
   const warnEl = document.getElementById('res-warning');
@@ -1540,8 +1565,8 @@ function calculer(){
     warnings.push('⚠ Ce gaz est un POISON pour les capteurs catalytiques — ne pas utiliser comme substitut sur CatEx.');
   if(['CCL4','CHCl3','C2HCL3'].includes(cibleId))
     warnings.push('⚠ Ce gaz cible est un poison CatEx. La détection par CatEx est inadaptée — privilégier un capteur PID ou IR.');
-  if(cible.crr > 5)
-    warnings.push(`⚠ CRR ${cible.nom} très élevé (${cible.crr}) — le capteur CatEx est peu adapté. Envisager un capteur EC ou PID.`);
+  if(cible.cf > 5)
+    warnings.push(`⚠ CRR ${cible.nom} très élevé (${cible.cf}) — le capteur CatEx est peu adapté. Envisager un capteur EC ou PID.`);
   if(['C6H6'].includes(cibleId))
     warnings.push('⚠ Benzène : CMR1A — VLEP 0,2 ppm depuis avril 2026. Capteur PID 10,0 eV obligatoire pour la surveillance santé.');
 
@@ -1618,14 +1643,14 @@ function renderCoefTable(){
       <th>Gaz</th><th>Formule</th><th>CRR</th><th>LEL</th>
     </tr></thead><tbody>`;
     byFam[f].forEach(g=>{
-      const warn = g.crr>5||['CCL4','CHCl3','C2HCL3'].includes(g.id);
+      const warn = g.cf>5||['CCL4','CHCl3','C2HCL3'].includes(g.id);
       html+=`<tr onclick="fillFromTable('${g.id}')" style="cursor:pointer">
         <td>
           <div class="gas-name">${g.nom}${warn?'<span style="color:var(--red);margin-left:4px">⚠</span>':''}</div>
           ${g.notes?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${g.notes}</div>`:''}
         </td>
         <td><span class="gas-formula">${g.formule}</span></td>
-        <td><span class="crr-val ${crrClass(g.crr)}">${g.crr.toFixed(2)}</span></td>
+        <td><span class="crr-val ${crrClass(g.cf)}">${g.cf.toFixed(2)}</span></td>
         <td><span class="lel-val">${g.lel!==null?g.lel+'%':'—'}</span></td>
       </tr>`;
     });
@@ -1959,8 +1984,8 @@ function gazBuildSelects(){
     const grpC = document.createElement('optgroup'); grpC.label=f;
     const grpS = document.createElement('optgroup'); grpS.label=f;
     GARS.filter(g=>g.famille===f).forEach(g=>{
-      grpC.appendChild(new Option(`${g.nom} (CRR ${g.crr.toFixed(2)})`, g.id));
-      grpS.appendChild(new Option(`${g.nom} (CRR ${g.crr.toFixed(2)})`, g.id));
+      grpC.appendChild(new Option(`${g.nom} (CF ${g.cf.toFixed(2)})`, g.id));
+      grpS.appendChild(new Option(`${g.nom} (CF ${g.cf.toFixed(2)})`, g.id));
     });
     cible.appendChild(grpC);
     subst.appendChild(grpS);
@@ -1971,8 +1996,28 @@ function gazBuildSelects(){
 function gazCalculer(){
   const cibleId = document.getElementById('gz-sel-cible').value;
   const substId = document.getElementById('gz-sel-subst').value;
-  const seuil   = parseFloat(document.getElementById('gz-inp-seuil').value);
-  const cylindre= parseFloat(document.getElementById('gz-inp-conc').value);
+  // Récupérer les valeurs converties en %LEL (via les variables internes)
+  // Si l'unité est %LEL, lire directement; sinon utiliser la valeur convertie
+  const _seuilRaw = parseFloat(document.getElementById('gz-inp-seuil').value);
+  const _concRaw  = parseFloat(document.getElementById('gz-inp-conc').value);
+
+  let seuil, cylindre;
+  if(_gazSeuilUnit === 'lel'){
+    seuil = _seuilRaw;
+  } else {
+    // ppm → %LEL
+    const cibleLEL = gazGetCibleLEL();
+    seuil = cibleLEL && !isNaN(_seuilRaw) ? ppmToLEL(_seuilRaw, cibleLEL) : _seuilRaw;
+  }
+  if(_gazConcUnit === 'lel'){
+    cylindre = _concRaw;
+  } else if(_gazConcUnit === 'ppm'){
+    const substLEL = gazGetSubstLEL();
+    cylindre = substLEL && !isNaN(_concRaw) ? ppmToLEL(_concRaw, substLEL) : _concRaw;
+  } else { // vol
+    const substLEL = gazGetSubstLEL();
+    cylindre = substLEL && !isNaN(_concRaw) ? volToLEL(_concRaw, substLEL) : _concRaw;
+  }
 
   if(!cibleId){ alert('Sélectionner le gaz cible'); return; }
   if(!substId){ alert('Sélectionner le gaz substitut'); return; }
@@ -1983,7 +2028,7 @@ function gazCalculer(){
   const subst = GARS.find(g=>g.id===substId);
 
   // Calcul : concentration à injecter = seuil × CRR_cible / CRR_subst
-  const conc_injecter = seuil * cible.crr / subst.crr;
+  const conc_injecter = seuil * cible.cf / subst.cf;
 
   // Valider que le cylindre est suffisant
   const ratio = conc_injecter / cylindre * 100;
@@ -1992,19 +2037,19 @@ function gazCalculer(){
   document.getElementById('gz-res-val').textContent = conc_injecter.toFixed(1);
   document.getElementById('gz-res-sub').textContent =
     `Injecter ${subst.nom} jusqu'à affichage ${conc_injecter.toFixed(1)}% LEL sur l'appareil`;
-  document.getElementById('gz-crr-c').textContent = cible.crr.toFixed(2);
+  document.getElementById('gz-crr-c').textContent = cible.cf.toFixed(2);
   document.getElementById('gz-name-c').textContent = cible.nom;
-  document.getElementById('gz-crr-s').textContent = subst.crr.toFixed(2);
+  document.getElementById('gz-crr-s').textContent = subst.cf.toFixed(2);
   document.getElementById('gz-name-s').textContent = subst.nom;
   document.getElementById('gz-seuil').textContent = seuil.toFixed(0);
   document.getElementById('gz-cylindre').textContent = cylindre.toFixed(1);
 
   // Formule détaillée
   document.getElementById('gz-formula').innerHTML =
-    `C<sub>affichée</sub> = ${seuil} × ${cible.crr.toFixed(2)} / ${subst.crr.toFixed(2)}<br>
-     C<sub>affichée</sub> = ${(seuil * cible.crr).toFixed(3)} / ${subst.crr.toFixed(2)}<br>
+    `C<sub>affichée</sub> = ${seuil} × ${cible.cf.toFixed(2)} / ${subst.cf.toFixed(2)}<br>
+     C<sub>affichée</sub> = ${(seuil * cible.cf).toFixed(3)} / ${subst.cf.toFixed(2)}<br>
      <b>C<sub>affichée</sub> = ${conc_injecter.toFixed(2)} % LEL</b>
-     <span class="step">→ Rapport CRR : ${(cible.crr/subst.crr).toFixed(3)}</span>`;
+     <span class="step">→ Rapport CRR : ${(cible.cf/subst.cf).toFixed(3)}</span>`;
 
   // Avertissements
   const warnEl = document.getElementById('gz-warning');
@@ -2020,8 +2065,8 @@ function gazCalculer(){
     warnings.push('⚠ Ce gaz est un POISON pour les capteurs catalytiques — ne pas utiliser comme substitut sur CatEx.');
   if(['CCL4','CHCl3','C2HCL3'].includes(cibleId))
     warnings.push('⚠ Ce gaz cible est un poison CatEx. La détection par CatEx est inadaptée — privilégier un capteur PID ou IR.');
-  if(cible.crr > 5)
-    warnings.push(`⚠ CRR ${cible.nom} très élevé (${cible.crr}) — le capteur CatEx est peu adapté. Envisager un capteur EC ou PID.`);
+  if(cible.cf > 5)
+    warnings.push(`⚠ CRR ${cible.nom} très élevé (${cible.cf}) — le capteur CatEx est peu adapté. Envisager un capteur EC ou PID.`);
   if(['C6H6'].includes(cibleId))
     warnings.push('⚠ Benzène : CMR1A — VLEP 0,2 ppm depuis avril 2026. Capteur PID 10,0 eV obligatoire pour la surveillance santé.');
 
@@ -2096,14 +2141,14 @@ function gazRenderCoefTable(){
       <th>Gaz</th><th>Formule</th><th>CRR</th><th>LEL</th>
     </tr></thead><tbody>`;
     byFam[f].forEach(g=>{
-      const warn = g.crr>5||['CCL4','CHCl3','C2HCL3'].includes(g.id);
+      const warn = g.cf>5||['CCL4','CHCl3','C2HCL3'].includes(g.id);
       html+=`<tr onclick="gazFillFromTable('${g.id}')" style="cursor:pointer">
         <td>
           <div class="gas-name">${g.nom}${warn?'<span style="color:var(--red);margin-left:4px">⚠</span>':''}</div>
           ${g.notes?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${g.notes}</div>`:''}
         </td>
         <td><span class="gas-formula">${g.formule}</span></td>
-        <td><span class="crr-val ${crrClass(g.crr)}">${g.crr.toFixed(2)}</span></td>
+        <td><span class="crr-val ${crrClass(g.cf)}">${g.cf.toFixed(2)}</span></td>
         <td><span class="lel-val">${g.lel!==null?g.lel+'%':'—'}</span></td>
       </tr>`;
     });
@@ -2147,12 +2192,17 @@ function gazSwitchPage(btn){
   if(page==='gz-page-coefs') gazBuildCoefTable();
   if(page==='gz-page-sens' && !window._gazSensSelectsFilled){
     window._gazSensSelectsFilled = true;
+  // Listeners changement de gaz → mise à jour conversions
+  const sc2 = document.getElementById('gz-sel-cible');
+  const ss2 = document.getElementById('gz-sel-subst');
+  if(sc2) sc2.addEventListener('change', ()=>gazConvertSeuil(_gazSeuilUnit));
+  if(ss2) ss2.addEventListener('change', ()=>gazConvertConc(_gazConcUnit));
     ['gz-sens-subst','gz-sens-cible'].forEach(id=>{
       const sel=document.getElementById(id); if(!sel) return;
       FAMILLES.forEach(f=>{
         const grp=document.createElement('optgroup'); grp.label=f;
         GARS.filter(g=>g.famille===f).forEach(g=>{
-          grp.appendChild(new Option(g.nom+' (CRR '+g.crr.toFixed(2)+')', g.id));
+          grp.appendChild(new Option(g.nom+' (CF '+g.cf.toFixed(2)+')', g.id));
         });
         sel.appendChild(grp);
       });
@@ -2182,12 +2232,17 @@ function gazInit(){
       const grp = document.createElement('optgroup');
       grp.label = f;
       GARS.filter(g=>g.famille===f).forEach(g=>{
-        grp.appendChild(new Option(g.nom+' (CRR '+g.crr.toFixed(2)+')', g.id));
+        grp.appendChild(new Option(g.nom+' (CF '+g.cf.toFixed(2)+')', g.id));
       });
       sel.appendChild(grp);
     });
   });
   window._gazSensSelectsFilled = true;
+  // Listeners changement de gaz → mise à jour conversions
+  const sc2 = document.getElementById('gz-sel-cible');
+  const ss2 = document.getElementById('gz-sel-subst');
+  if(sc2) sc2.addEventListener('change', ()=>gazConvertSeuil(_gazSeuilUnit));
+  if(ss2) ss2.addEventListener('change', ()=>gazConvertConc(_gazConcUnit));
   const si = document.getElementById('gz-coef-search');
   const sc = document.getElementById('gz-coef-clear');
   if(si){
@@ -2246,8 +2301,8 @@ function gazCalculerSensibilite(){
   // Mais pour le calcul du point de span, l'appareil est calibré sur le gaz cible,
   // donc on injecte une concentration de gaz substitut qui SIMULE une concentration
   // de gaz cible = C_cylindre × CRR_cible / CRR_subst (ce qu'on veut valider)
-  const concCible = concCylindre * cible.crr / subst.crr;
-  const crr_ratio = cible.crr / subst.crr;
+  const concCible = concCylindre * cible.cf / subst.cf;
+  const crr_ratio = cible.cf / subst.cf;
 
   let resVal, resUnit, resLabel, formula, lectureVal, derive, verdict, verdictColor;
   const warns = [];
@@ -2266,7 +2321,7 @@ function gazCalculerSensibilite(){
     resLabel = 'Courant de sortie attendu (span)';
 
     formula =
-      `C_équiv = ${concCylindre} × ${cible.crr.toFixed(2)} / ${subst.crr.toFixed(2)} = <b>${concCible.toFixed(2)} % LEL ${cible.nom}</b>\n` +
+      `C_équiv = ${concCylindre} × ${cible.cf.toFixed(2)} / ${subst.cf.toFixed(2)} = <b>${concCible.toFixed(2)} % LEL ${cible.nom}</b>\n` +
       `\nFormule 4–20 mA :\n` +
       `I = I₀ + (I_PE - I₀) × C_équiv / PE\n` +
       `I = ${zeroMA} + (${peMA} - ${zeroMA}) × ${concCible.toFixed(2)} / ${pe}\n` +
@@ -2316,7 +2371,7 @@ function gazCalculerSensibilite(){
       // Mais ici l'entrée est en %LEL, PE en %LEL
       mvAttendu = 400 + (1600 * concCible / pe);
       formula =
-        `C_équiv = ${concCylindre} × ${cible.crr.toFixed(2)} / ${subst.crr.toFixed(2)} = <b>${concCible.toFixed(2)} % LEL ${cible.nom}</b>\n` +
+        `C_équiv = ${concCylindre} × ${cible.cf.toFixed(2)} / ${subst.cf.toFixed(2)} = <b>${concCible.toFixed(2)} % LEL ${cible.nom}</b>\n` +
         `\nFormule Oldham OLCT 100 :\n` +
         `U(mV) = 400 + (1600 × C_équiv / PE)\n` +
         `U(mV) = 400 + (1600 × ${concCible.toFixed(2)} / ${pe})\n` +
@@ -2329,7 +2384,7 @@ function gazCalculerSensibilite(){
       // Générique : U(mV) = U0 + K × C
       mvAttendu = zeroMV + (nominalMV * concCible);
       formula =
-        `C_équiv = ${concCylindre} × ${cible.crr.toFixed(2)} / ${subst.crr.toFixed(2)} = <b>${concCible.toFixed(2)} % LEL ${cible.nom}</b>\n` +
+        `C_équiv = ${concCylindre} × ${cible.cf.toFixed(2)} / ${subst.cf.toFixed(2)} = <b>${concCible.toFixed(2)} % LEL ${cible.nom}</b>\n` +
         `\nFormule générique pont :\n` +
         `U(mV) = U₀ + K × C_équiv\n` +
         `U(mV) = ${zeroMV} + ${nominalMV} × ${concCible.toFixed(2)}\n` +
@@ -2396,8 +2451,8 @@ function gazCalculerSensibilite(){
   // Avertissements
   if(['CCL4','CHCl3','C2HCL3'].includes(substId))
     warns.push('⚠ Gaz poison CatEx — résultats non fiables');
-  if(subst.crr > 5)
-    warns.push(`⚠ CRR ${subst.nom} très élevé (${subst.crr}) — précision réduite`);
+  if(subst.cf > 5)
+    warns.push(`⚠ CRR ${subst.nom} très élevé (${subst.cf}) — précision réduite`);
 
   const wEl = document.getElementById('gz-sens-warning');
   if(warns.length){
@@ -2424,6 +2479,158 @@ function gazResetSensibilite(){
 
 // selects sensibilité initialisés dans gazSwitchPage
 
+
+
+// ── Gestion des unités %LEL / ppm / %vol ────────────────────────────────────
+let _gazSeuilUnit = 'lel'; // 'lel' | 'ppm'
+let _gazConcUnit  = 'lel'; // 'lel' | 'ppm' | 'vol'
+let _gazSeuilLEL  = 50;    // valeur interne toujours en %LEL
+let _gazConcLEL   = null;  // valeur interne toujours en %LEL
+
+// Conversion ppm ↔ %LEL : nécessite le LEL du gaz substitut (ou cible)
+// %LEL = ppm / (LEL_vol% × 10000) × 100
+// ppm  = %LEL × LEL_vol% × 10000 / 100 = %LEL × LEL_vol% × 100
+
+function gazGetSubstLEL(){
+  const id = document.getElementById('gz-sel-subst').value;
+  if(!id) return null;
+  const g = GARS.find(x=>x.id===id);
+  return g && g.lel ? g.lel : null;
+}
+function gazGetCibleLEL(){
+  const id = document.getElementById('gz-sel-cible').value;
+  if(!id) return null;
+  const g = GARS.find(x=>x.id===id);
+  return g && g.lel ? g.lel : null;
+}
+
+function ppmToLEL(ppm, lel_vol){
+  // lel_vol en %vol → 1 %LEL = lel_vol%/100 vol → 1 %LEL = lel_vol×10000 ppm
+  return ppm / (lel_vol * 10000 / 100);
+}
+function lelToPPM(lel_pct, lel_vol){
+  return lel_pct * lel_vol * 100;
+}
+function volToLEL(vol_pct, lel_vol){
+  return vol_pct / lel_vol * 100;
+}
+function lelToVol(lel_pct, lel_vol){
+  return lel_pct * lel_vol / 100;
+}
+
+function gazSetSeuilUnit(unit){
+  const inp = document.getElementById('gz-inp-seuil');
+  const lbl = document.getElementById('gz-seuil-convert');
+  const val = parseFloat(inp.value);
+
+  // Convertir la valeur affichée vers la nouvelle unité
+  if(!isNaN(val)){
+    if(_gazSeuilUnit === 'lel' && unit === 'ppm'){
+      const lel = gazGetCibleLEL();
+      if(lel){ inp.value = (lelToPPM(val, lel)).toFixed(0); }
+    } else if(_gazSeuilUnit === 'ppm' && unit === 'lel'){
+      const lel = gazGetCibleLEL();
+      if(lel){ inp.value = ppmToLEL(val, lel).toFixed(2); }
+    }
+  }
+
+  _gazSeuilUnit = unit;
+  document.getElementById('gz-seuil-lel').style.background = unit==='lel' ? '#FF6A00' : 'transparent';
+  document.getElementById('gz-seuil-lel').style.color = unit==='lel' ? '#12141A' : 'var(--text3)';
+  document.getElementById('gz-seuil-ppm').style.background = unit==='ppm' ? '#FF6A00' : 'transparent';
+  document.getElementById('gz-seuil-ppm').style.color = unit==='ppm' ? '#12141A' : 'var(--text3)';
+  gazConvertSeuil(unit);
+}
+
+function gazConvertSeuil(unit){
+  const inp = document.getElementById('gz-inp-seuil');
+  const lbl = document.getElementById('gz-seuil-convert');
+  const val = parseFloat(inp.value);
+  if(isNaN(val) || val<=0){ lbl.style.display='none'; return; }
+
+  const lel = gazGetCibleLEL();
+  const seuilUnit = _gazSeuilUnit;
+
+  let lelVal, ppmVal;
+  if(seuilUnit === 'lel'){
+    lelVal = val;
+    ppmVal = lel ? lelToPPM(val, lel) : null;
+    _gazSeuilLEL = lelVal;
+  } else {
+    ppmVal = val;
+    lelVal = lel ? ppmToLEL(val, lel) : null;
+    _gazSeuilLEL = lelVal || val;
+  }
+
+  if(lelVal !== null && ppmVal !== null){
+    lbl.style.display = 'block';
+    lbl.textContent = seuilUnit==='lel'
+      ? `≈ ${ppmVal.toFixed(0)} ppm` + (lel ? ` (LEL gaz cible = ${lel}% vol)` : ' — sélectionner le gaz cible')
+      : `= ${lelVal.toFixed(2)} % LEL` + (lel ? ` (LEL gaz cible = ${lel}% vol)` : '');
+  } else {
+    lbl.style.display = 'block';
+    lbl.style.color = '#FFB800';
+    lbl.textContent = 'Sélectionner le gaz cible pour la conversion ppm';
+  }
+}
+
+function gazSetConcUnit(unit){
+  const inp = document.getElementById('gz-inp-conc');
+  const val = parseFloat(inp.value);
+  const lel = gazGetSubstLEL();
+
+  if(!isNaN(val) && lel){
+    // Convertir depuis l'ancienne unité vers la nouvelle
+    let lelCurrent;
+    if(_gazConcUnit==='lel') lelCurrent = val;
+    else if(_gazConcUnit==='ppm') lelCurrent = ppmToLEL(val, lel);
+    else if(_gazConcUnit==='vol') lelCurrent = volToLEL(val, lel);
+
+    if(unit==='lel') inp.value = lelCurrent.toFixed(2);
+    else if(unit==='ppm') inp.value = lelToPPM(lelCurrent, lel).toFixed(0);
+    else if(unit==='vol') inp.value = lelToVol(lelCurrent, lel).toFixed(4);
+  }
+
+  _gazConcUnit = unit;
+  ['lel','ppm','vol'].forEach(u=>{
+    const b = document.getElementById('gz-conc-'+u);
+    if(!b) return;
+    b.style.background = u===unit ? '#FF6A00' : 'transparent';
+    b.style.color = u===unit ? '#12141A' : 'var(--text3)';
+  });
+  gazConvertConc(unit);
+}
+
+function gazConvertConc(unit){
+  const inp = document.getElementById('gz-inp-conc');
+  const lbl = document.getElementById('gz-conc-convert');
+  const val = parseFloat(inp.value);
+  if(isNaN(val) || val<=0){ lbl.style.display='none'; return; }
+
+  const lel = gazGetSubstLEL();
+  const u = _gazConcUnit;
+
+  let lelVal, ppmVal, volVal;
+  if(u==='lel'){ lelVal=val; ppmVal=lel?lelToPPM(val,lel):null; volVal=lel?lelToVol(val,lel):null; _gazConcLEL=val; }
+  else if(u==='ppm'){ ppmVal=val; lelVal=lel?ppmToLEL(val,lel):null; volVal=lel&&lelVal?lelToVol(lelVal,lel):null; _gazConcLEL=lelVal||val; }
+  else if(u==='vol'){ volVal=val; lelVal=lel?volToLEL(val,lel):null; ppmVal=lel&&lelVal?lelToPPM(lelVal,lel):null; _gazConcLEL=lelVal||val; }
+
+  if(lel && lelVal!==null){
+    lbl.style.display = 'block';
+    lbl.style.color = '#00D4FF';
+    const parts = [];
+    if(u!=='lel' && lelVal!==null) parts.push(`${lelVal.toFixed(2)} % LEL`);
+    if(u!=='ppm' && ppmVal!==null) parts.push(`${ppmVal.toFixed(0)} ppm`);
+    if(u!=='vol' && volVal!==null) parts.push(`${volVal.toFixed(4)} % vol`);
+    lbl.textContent = `= ${parts.join(' = ')}` + ` (LEL ${gazGetSubstLEL()}% vol)`;
+  } else {
+    lbl.style.display = 'block';
+    lbl.style.color = '#FFB800';
+    lbl.textContent = 'Sélectionner le gaz substitut pour la conversion';
+  }
+}
+
+// Listeners change gaz → dans gazInit()
 
 // ══ NAVIGATION GLOBALE ══════════════════════════════════════════════════════
 function launchApp(app){
